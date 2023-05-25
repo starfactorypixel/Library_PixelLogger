@@ -22,7 +22,7 @@ public:
     DebugSerial()
     {
 #ifdef HAL_UART_MODULE_ENABLED
-        _huart = hDebugUart;
+        _huart = &hDebugUart;
 #endif // HAL_UART_MODULE_ENABLED
     }
 
@@ -61,7 +61,8 @@ public:
 
     void PrintTopic(const char *topic)
     {
-        _HW_Print((uint8_t *)topic, strlen(topic));
+        Printf("+%s=", topic);
+        //_HW_Print((uint8_t *)topic, strlen(topic));
     }
 
 private:
