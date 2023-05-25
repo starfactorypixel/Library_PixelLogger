@@ -65,6 +65,9 @@ public:
 
     DebugSerial &PrintTopic(const char *topic)
     {
+        if (topic == nullptr)
+            return *this;
+
         return Printf("+%s\t", topic);
     }
 
