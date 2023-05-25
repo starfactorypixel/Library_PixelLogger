@@ -53,7 +53,7 @@ public:
         vsnprintf(_buffer, buffer_length, str, argptr);
         va_end(argptr);
 
-        _HW_Print();
+        _HW_Print((uint8_t *)_buffer, strlen(_buffer));
 
         return *this;
     }
@@ -74,9 +74,9 @@ private:
 #ifdef HAL_UART_MODULE_ENABLED
     UART_HandleTypeDef *_huart = nullptr;
 
-    bool _HW_Print()
+    bool _HW_Print(uint8_t *pData, uint16_t Size)
     {
-        HAL_StatusTypeDef result = HAL_UART_Transmit(_huart, (uint8_t *)_buffer, strlen(_buffer), 64);
+        HAL_StatusTypeDef result = HAL_UART_Transmit(_huart, pData, Size, 64);
         if (result != HAL_OK)
         {
             HAL_UART_AbortTransmit(_huart);
@@ -86,7 +86,7 @@ private:
     }
 
 #elif defined(_WIN32) || defined(_WIN64) || defined(__linux__) // HAL_UART_MODULE_ENABLED
-    bool _HW_Print()
+    bool _HW_Print(uint8_t *pData, uint16_t Size)
     {
         std::cout << _buffer << std::flush;
 
@@ -95,7 +95,7 @@ private:
 
 #else // HAL_UART_MODULE_ENABLED
 #warning All logging will be ignored
-    bool _HW_Print()
+    bool _HW_Print(uint8_t *pData, uint16_t Size)
     {
         return false;
     }
