@@ -26,23 +26,27 @@ public:
 #endif // HAL_UART_MODULE_ENABLED
     }
 
-    void Print(const char *str, const char *topic = nullptr)
+    DebugSerial &Print(const char *str, const char *topic = nullptr)
     {
         PrintTopic(topic);
         _HW_Print((uint8_t *)str, strlen(str));
+        
+        return *this;
     }
 
-    void Print(const uint8_t *str, uint16_t length, const char *topic = nullptr)
+    DebugSerial &Print(const uint8_t *str, uint16_t length, const char *topic = nullptr)
     {
         PrintTopic(topic);
         _HW_Print((uint8_t *)str, length);
+
+        return *this;
     }
 
     template <uint16_t length = 255>
-    void Printf(const char *str, ...)
+    DebugSerial &Printf(const char *str, ...)
     {
         if (str == nullptr)
-            return;
+            return *this;
 
         char buffer[length];
 
@@ -52,17 +56,18 @@ public:
         va_end(argptr);
 
         _HW_Print((uint8_t *)buffer, strlen(buffer));
+
+        return *this;
     }
 
-    void PrintNewLine()
+    DebugSerial &PrintNewLine()
     {
-        Print("\n");
+        return Print("\n");
     }
 
-    void PrintTopic(const char *topic)
+    DebugSerial &PrintTopic(const char *topic)
     {
-        Printf("+%s=", topic);
-        //_HW_Print((uint8_t *)topic, strlen(topic));
+        return Printf("+%s\t", topic);
     }
 
 private:
@@ -113,9 +118,9 @@ DebugSerial logger;
 
     #ifdef DETAILED_DEBUG
         #define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
-        #define DEBUG_LOG(fmt, ...) DEBUG_LOG_SIMPLE("+%s=[%s:%d] " fmt, logger.DebugTopic, __FILENAME__, __LINE__, ##__VA_ARGS__)
+        #define DEBUG_LOG(fmt, ...) DEBUG_LOG_SIMPLE("+%s\t[%s:%d] " fmt, logger.DebugTopic, __FILENAME__, __LINE__, ##__VA_ARGS__)
     #else // DETAILED_DEBUG
-        #define DEBUG_LOG(fmt, ...) DEBUG_LOG_SIMPLE("+%s=" fmt, logger.DebugTopic, ##__VA_ARGS__)
+        #define DEBUG_LOG(fmt, ...) DEBUG_LOG_SIMPLE("+%s\t" fmt, logger.DebugTopic, ##__VA_ARGS__)
     #endif // DETAILED_DEBUG
 #else  // DEBUG
     #define DEBUG_LOG_SIMPLE(fmt, ...)
