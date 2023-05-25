@@ -4,7 +4,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 
-#if defined(_WIN32) || defined(_WIN64) || defined(__GNUC__)
+#if defined(_WIN32) || defined(_WIN64) || defined(__linux__)
 #include <iostream>
 #include <cstring>
 #endif
@@ -14,6 +14,7 @@
 extern UART_HandleTypeDef hDebugUart;
 #endif // HAL_UART_MODULE_ENABLED
 
+template <uint16_t buffer_length = 256>
 class DebugSerial
 {
 public:
@@ -42,20 +43,17 @@ public:
         return *this;
     }
 
-    template <uint16_t length = 255>
     DebugSerial &Printf(const char *str, ...)
     {
         if (str == nullptr)
             return *this;
 
-        char buffer[length];
-
         va_list argptr;
         va_start(argptr, str);
-        vsnprintf(buffer, length, str, argptr);
+        vsnprintf(_buffer, buffer_length, str, argptr);
         va_end(argptr);
 
-        _HW_Print((uint8_t *)buffer, strlen(buffer));
+        _HW_Print();
 
         return *this;
     }
@@ -71,58 +69,53 @@ public:
     }
 
 private:
+    char _buffer[buffer_length];
+
 #ifdef HAL_UART_MODULE_ENABLED
     UART_HandleTypeDef *_huart = nullptr;
 
-    // HAL_StatusTypeDef _HW_Print(uint8_t *pData, uint16_t Size)
-    bool _HW_Print(uint8_t *pData, uint16_t Size)
+    bool _HW_Print()
     {
-        if (pData == nullptr)
-            return false;
-
-        HAL_StatusTypeDef result = HAL_UART_Transmit(_huart, pData, Size, 64);
+        HAL_StatusTypeDef result = HAL_UART_Transmit(_huart, (uint8_t *)_buffer, strlen(_buffer), 64);
         if (result != HAL_OK)
         {
             HAL_UART_AbortTransmit(_huart);
         }
 
-        // return result;
         return (result == HAL_OK);
     }
 
-#elif defined(_WIN32) || defined(_WIN64) || defined(__GNUC__) // HAL_UART_MODULE_ENABLED
-    bool _HW_Print(uint8_t *pData, uint16_t Size)
+#elif defined(_WIN32) || defined(_WIN64) || defined(__linux__) // HAL_UART_MODULE_ENABLED
+    bool _HW_Print()
     {
-        if (pData == nullptr)
-            return false;
-
-        std::cout.write((char *)pData, (int)Size);
-        std::cout << std::endl;
+        std::cout << _buffer << std::flush;
 
         return true;
     }
 
 #else // HAL_UART_MODULE_ENABLED
 #warning All logging will be ignored
-    bool _HW_Print(uint8_t *pData, uint16_t Size)
+    bool _HW_Print()
     {
         return false;
     }
 #endif // HAL_UART_MODULE_ENABLED
 };
 
-DebugSerial logger;
+DebugSerial Logger;
 
 #if defined(DEBUG) || defined(DETAILED_DEBUG)
-    #define DEBUG_LOG_SIMPLE(fmt, ...) do { logger.Printf(fmt, ##__VA_ARGS__); } while (0)
+    #define DEBUG_LOG_SIMPLE(fmt, ...) do { Logger.Printf(fmt, ##__VA_ARGS__); } while (0)
+    #define DEBUG_LOG_TOPIC(topic, fmt, ...) do { Logger.PrintTopic(topic); Logger.Printf(fmt, ##__VA_ARGS__); } while (0)
 
     #ifdef DETAILED_DEBUG
         #define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
-        #define DEBUG_LOG(fmt, ...) DEBUG_LOG_SIMPLE("+%s\t[%s:%d] " fmt, logger.DebugTopic, __FILENAME__, __LINE__, ##__VA_ARGS__)
+        #define DEBUG_LOG(fmt, ...) DEBUG_LOG_TOPIC(Logger.DebugTopic, "[%s:%d] " fmt, __FILENAME__, __LINE__, ##__VA_ARGS__)
     #else // DETAILED_DEBUG
-        #define DEBUG_LOG(fmt, ...) DEBUG_LOG_SIMPLE("+%s\t" fmt, logger.DebugTopic, ##__VA_ARGS__)
+        #define DEBUG_LOG(fmt, ...) DEBUG_LOG_TOPIC(Logger.DebugTopic, fmt, ##__VA_ARGS__)
     #endif // DETAILED_DEBUG
 #else  // DEBUG
     #define DEBUG_LOG_SIMPLE(fmt, ...)
+    #define DEBUG_LOG_TOPIC(topic, fmt, ...)
     #define DEBUG_LOG(fmt, ...)
 #endif // DEBUG
