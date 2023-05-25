@@ -109,13 +109,13 @@ DebugSerial<256> Logger;
 
 #if defined(DEBUG) || defined(DETAILED_DEBUG)
     #define DEBUG_LOG_SIMPLE(fmt, ...) do { Logger.Printf(fmt, ##__VA_ARGS__); } while (0)
-    #define DEBUG_LOG_TOPIC(topic, fmt, ...) do { Logger.PrintTopic(topic); Logger.Printf(fmt, ##__VA_ARGS__); } while (0)
+    #define DEBUG_LOG_TOPIC(topic, fmt, ...) do { Logger.PrintTopic(topic).Printf(fmt, ##__VA_ARGS__); } while (0)
 
     #ifdef DETAILED_DEBUG
         #define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
-        #define DEBUG_LOG(fmt, ...) DEBUG_LOG_TOPIC(Logger.DebugTopic, "[%s:%d] " fmt, __FILENAME__, __LINE__, ##__VA_ARGS__)
+        #define DEBUG_LOG(fmt, ...) DEBUG_LOG_TOPIC(Logger.DebugTopic, "[%s:%d] " fmt "\n", __FILENAME__, __LINE__, ##__VA_ARGS__)
     #else // DETAILED_DEBUG
-        #define DEBUG_LOG(fmt, ...) DEBUG_LOG_TOPIC(Logger.DebugTopic, fmt, ##__VA_ARGS__)
+        #define DEBUG_LOG(fmt, ...) DEBUG_LOG_TOPIC(Logger.DebugTopic, fmt "\n", ##__VA_ARGS__)
     #endif // DETAILED_DEBUG
 #else  // DEBUG
     #define DEBUG_LOG_SIMPLE(fmt, ...)
