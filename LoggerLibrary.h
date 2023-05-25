@@ -102,7 +102,7 @@ private:
 #endif // HAL_UART_MODULE_ENABLED
 };
 
-DebugSerial Logger;
+DebugSerial<256> Logger;
 
 #if defined(DEBUG) || defined(DETAILED_DEBUG)
     #define DEBUG_LOG_SIMPLE(fmt, ...) do { Logger.Printf(fmt, ##__VA_ARGS__); } while (0)
