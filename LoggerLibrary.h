@@ -14,6 +14,10 @@
 extern UART_HandleTypeDef hDebugUart;
 #endif // HAL_UART_MODULE_ENABLED
 
+#ifdef ESP32
+#warning 'Serial' is used for debugging!
+#endif // ESP32
+
 template <uint16_t buffer_length = 256>
 class DebugSerial
 {
@@ -87,8 +91,14 @@ private:
 
         return (result == HAL_OK);
     }
+#elif defined(ESP32) // HAL_UART_MODULE_ENABLED
+    bool _HW_Print(uint8_t *pData, uint16_t Size)
+    {
+        Serial.write(pData, Size);
 
-#elif defined(_WIN32) || defined(_WIN64) || defined(__linux__) // HAL_UART_MODULE_ENABLED
+        return true;
+    }
+#elif defined(_WIN32) || defined(_WIN64) || defined(__linux__) // ESP32
     bool _HW_Print(uint8_t *pData, uint16_t Size)
     {
         std::cout << _buffer << std::flush;
