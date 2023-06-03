@@ -54,7 +54,7 @@ public:
 
         va_list argptr;
         va_start(argptr, str);
-        vsnprintf(_buffer, buffer_length, str, argptr);
+        vsnprintf(_buffer_ptr, _buffer_size_left, str, argptr);
         va_end(argptr);
 
         _Print(_buffer, strlen(_buffer));
