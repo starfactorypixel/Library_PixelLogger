@@ -9,14 +9,12 @@
 #include <cstring>
 #endif
 
-#ifdef HAL_UART_MODULE_ENABLED
-#warning Check if the hDebugUart is defined?
-extern UART_HandleTypeDef hDebugUart;
+#ifdef HAL_UART_MODULE_ENABLED // STM32
+    #warning Check if the hDebugUart is defined?
+    extern UART_HandleTypeDef hDebugUart;
+#elif defined(ESP32) // ESP32
+    #warning 'Serial' is used for debugging!
 #endif // HAL_UART_MODULE_ENABLED
-
-#ifdef ESP32
-#warning 'Serial' is used for debugging!
-#endif // ESP32
 
 template <uint16_t buffer_length = 256>
 class DebugSerial
@@ -24,12 +22,7 @@ class DebugSerial
 public:
     const char *DebugTopic = "DEBUG";
 
-    DebugSerial()
-    {
-#ifdef HAL_UART_MODULE_ENABLED
-        _huart = &hDebugUart;
-#endif // HAL_UART_MODULE_ENABLED
-    }
+    DebugSerial() {};
 
     DebugSerial &Print(const char *str, const char *topic = nullptr)
     {
@@ -79,18 +72,17 @@ private:
     char _buffer[buffer_length];
 
 #ifdef HAL_UART_MODULE_ENABLED
-    UART_HandleTypeDef *_huart = nullptr;
-
     bool _HW_Print(uint8_t *pData, uint16_t Size)
     {
-        HAL_StatusTypeDef result = HAL_UART_Transmit(_huart, pData, Size, 64);
+        HAL_StatusTypeDef result = HAL_UART_Transmit(&hDebugUart, pData, Size, 64);
         if (result != HAL_OK)
         {
-            HAL_UART_AbortTransmit(_huart);
+            HAL_UART_AbortTransmit(&hDebugUart);
         }
 
         return (result == HAL_OK);
     }
+
 #elif defined(ESP32) // HAL_UART_MODULE_ENABLED
     bool _HW_Print(uint8_t *pData, uint16_t Size)
     {
@@ -98,6 +90,7 @@ private:
 
         return true;
     }
+
 #elif defined(_WIN32) || defined(_WIN64) || defined(__linux__) // ESP32
     bool _HW_Print(uint8_t *pData, uint16_t Size)
     {
