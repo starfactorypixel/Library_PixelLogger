@@ -32,6 +32,8 @@ public:
     DebugSerial()
     {
         _ResetBuffer();
+
+        PrintTopic(DebugTopic).Printf("Logger config: %d bytes buffer size\n\n", buffer_length);
     }
 
     DebugSerial &PrintTopic(const char *topic)
@@ -99,7 +101,7 @@ public:
         }
 
         _Print(_buffer, buffer_length - _buffer_size_left + 1);
-        
+
         return *this;
     }
 
