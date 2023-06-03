@@ -39,7 +39,10 @@ public:
         if (topic == nullptr)
             return *this;
 
-        return Printf("+%s\t", topic);
+        _FillTopic(topic);
+        _Print(_buffer, strlen(_buffer));
+
+        return *this;
     }
 
     DebugSerial &Printf(const char *str, ...)
