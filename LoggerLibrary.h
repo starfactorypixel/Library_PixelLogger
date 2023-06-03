@@ -62,7 +62,7 @@ public:
 
     DebugSerial &Print(const void *data, uint16_t data_length, const char *topic, logger_output_type_t data_type)
     {
-        if (data == nullptr || data_length == 0)
+        if (data == nullptr || data_length == 0 || data_length > _buffer_size_left)
             return *this;
 
         if (topic != nullptr)
@@ -84,22 +84,23 @@ public:
                 _buffer_ptr += result;
                 _buffer_size_left -= result;
             }
-            _Print(_buffer, buffer_length - _buffer_size_left + 1);
-            
-            return *this;
+            break;
         }
         
         case LOG_OUT_TYPE_BYTES:
         {
-            _Print(_buffer, buffer_length - _buffer_size_left + 1);
-            _Print(data, data_length);
-            
-            return *this;
+            memcpy(_buffer_ptr, data, data_length);
+            _buffer_size_left -= data_length;
+            break;
         }
 
         default:
             return *this;
         }
+
+        _Print(_buffer, buffer_length - _buffer_size_left + 1);
+        
+        return *this;
     }
 
     DebugSerial &Print(const char *str)
