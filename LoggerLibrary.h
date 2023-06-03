@@ -94,7 +94,7 @@ private:
 #elif defined(_WIN32) || defined(_WIN64) || defined(__linux__) // ESP32
     bool _HW_Print(uint8_t *pData, uint16_t Size)
     {
-        std::cout << _buffer << std::flush;
+        std::cout << std::string((char *)pData, Size) << std::flush;
 
         return true;
     }
