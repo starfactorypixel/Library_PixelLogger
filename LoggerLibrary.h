@@ -248,6 +248,7 @@ DebugSerial<256> Logger;
 #if defined(DEBUG) || defined(DETAILED_DEBUG)
     #define DEBUG_LOG_SIMPLE(fmt, ...) do { Logger.Printf(fmt, ##__VA_ARGS__); } while (0)
     #define DEBUG_LOG_TOPIC(topic, fmt, ...) do { Logger.PrintTopic(topic).Printf(fmt, ##__VA_ARGS__); } while (0)
+    #define DEBUG_LOG_ARRAY(topic, data, data_length) do { Logger.Print(data, data_length, topic); } while (0)
 
     #ifdef DETAILED_DEBUG
         #define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
