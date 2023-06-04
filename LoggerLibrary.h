@@ -261,4 +261,6 @@ DebugSerial<256> Logger;
     #define DEBUG_LOG_SIMPLE(fmt, ...)
     #define DEBUG_LOG_TOPIC(topic, fmt, ...)
     #define DEBUG_LOG(fmt, ...)
+    #define DEBUG_LOG_ARRAY(topic, data, data_length)
+    #define DEBUG_LOG_STR(topic, null_terminated_string)
 #endif // DEBUG
