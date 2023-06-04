@@ -5,7 +5,7 @@
 #include <stdio.h>
 
 #ifndef DEBUG_LOGGER_SIZE
-	#define DEBUG_LOGGER_SIZE (256)
+    #define DEBUG_LOGGER_SIZE (256)
 #endif
 
 #if defined(_WIN32) || defined(_WIN64) || defined(__linux__)
@@ -253,7 +253,7 @@ DebugLogger<DEBUG_LOGGER_SIZE> Logger;
     #define DEBUG_LOG_SIMPLE(fmt, ...) do { Logger.Printf(fmt, ##__VA_ARGS__); } while (0)
     #define DEBUG_LOG_TOPIC(topic, fmt, ...) do { Logger.PrintTopic(topic).Printf(fmt, ##__VA_ARGS__); } while (0)
     #define DEBUG_LOG_ARRAY_BIN(topic, data, data_length) do { Logger.Print(data, data_length, topic, LOG_OUT_TYPE_BYTES); } while (0)
-	#define DEBUG_LOG_ARRAY_HEX(topic, data, data_length) do { Logger.Print(data, data_length, topic, LOG_OUT_TYPE_HEX); } while (0)
+    #define DEBUG_LOG_ARRAY_HEX(topic, data, data_length) do { Logger.Print(data, data_length, topic, LOG_OUT_TYPE_HEX); } while (0)
     #define DEBUG_LOG_STR(topic, null_terminated_string) do { Logger.Print(null_terminated_string, topic); } while (0)
 
     #ifdef DETAILED_DEBUG
@@ -267,6 +267,6 @@ DebugLogger<DEBUG_LOGGER_SIZE> Logger;
     #define DEBUG_LOG_TOPIC(topic, fmt, ...)
     #define DEBUG_LOG(fmt, ...)
     #define DEBUG_LOG_ARRAY_BIN(topic, data, data_length)
-	#define DEBUG_LOG_ARRAY_HEX(topic, data, data_length)
+    #define DEBUG_LOG_ARRAY_HEX(topic, data, data_length)
     #define DEBUG_LOG_STR(topic, null_terminated_string)
 #endif // DEBUG
