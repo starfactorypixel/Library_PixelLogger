@@ -64,7 +64,7 @@ public:
 
     DebugSerial &Print(const void *data, uint16_t data_length, const char *topic, logger_output_type_t data_type)
     {
-        if (data == nullptr || data_length == 0 || data_length > _buffer_size_left)
+        if (data == nullptr || data_length == 0)
             return *this;
 
         if (topic != nullptr)
@@ -75,32 +75,16 @@ public:
         switch (data_type)
         {
         case LOG_OUT_TYPE_HEX:
-        {
-            int result = 0;
-            for (uint8_t i = 0; i < data_length; i++)
-            {
-                result = snprintf(_buffer_ptr, _buffer_size_left, "0x%02X%s", ((uint8_t *)data)[i], (i == data_length - 1) ? "" : ", ");
-                if (result < 0)
-                    break;
-                
-                _buffer_ptr += result;
-                _buffer_size_left -= result;
-            }
+            _PrintHEX(data, data_length);
             break;
-        }
         
         case LOG_OUT_TYPE_BYTES:
-        {
-            memcpy(_buffer_ptr, data, data_length);
-            _buffer_size_left -= data_length;
+            _PrintBytes(data, data_length);
             break;
-        }
 
         default:
-            return *this;
+            break;
         }
-
-        _Print(_buffer, buffer_length - _buffer_size_left + 1);
 
         return *this;
     }
@@ -110,7 +94,9 @@ public:
         if (str == nullptr)
             return *this;
         
-        return Print(str, strlen(str), nullptr, LOG_OUT_TYPE_BYTES);
+        _PrintBytes(str, strlen(str));
+        
+        return *this;
     }
 
     DebugSerial &Print(const char *str, const char *topic)
@@ -165,6 +151,59 @@ private:
     {
         _HW_Print(pData, Size);
         _ResetBuffer();
+    }
+
+    bool _FillHEX(uint8_t byte, bool last_item = false)
+    {
+        int result = snprintf(_buffer_ptr, _buffer_size_left, "0x%02X%s", byte, last_item ? "" : ", ");
+
+        if (result <= 0 || result >= _buffer_size_left)
+            return false;
+
+        _buffer_ptr += result;
+        _buffer_size_left -= result;
+
+        return true;
+    }
+
+    void _PrintHEX(const void *data, uint16_t data_length)
+    {
+        static_assert(buffer_length > 6, "Can't print HEX with small buffer. String like '0xFF, \0' is 7 bytes length.");
+
+        if (data == nullptr || data_length == 0)
+            return;
+
+        for (uint16_t i = 0; i < data_length; i++)
+        {
+            if ( !_FillHEX( ((uint8_t *)data)[i], (i == data_length - 1) ) )
+            {
+                _Print(_buffer, buffer_length - _buffer_size_left);
+                _FillHEX( ((uint8_t *)data)[i], (i == data_length - 1) );
+            }
+        }
+
+        _Print(_buffer, buffer_length - _buffer_size_left);
+    }
+
+    void _PrintBytes(const void *data, uint16_t data_length)
+    {
+        if (data == nullptr || data_length == 0)
+            return;
+
+        uint16_t data_left = data_length;
+
+        uint8_t *data_pointer = (uint8_t *)data;
+        uint16_t copied_length = 0;
+        while (data_left > 0)
+        {
+            copied_length = (data_left <= _buffer_size_left) ? data_left : _buffer_size_left;
+            memcpy(_buffer_ptr, data_pointer, copied_length);
+            _buffer_size_left -= copied_length;
+            data_left -= copied_length;
+            data_pointer += copied_length;
+
+            _Print(_buffer, buffer_length - _buffer_size_left);
+        }
     }
 
 #ifdef HAL_UART_MODULE_ENABLED
