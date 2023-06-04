@@ -4,6 +4,10 @@
 #include <stdarg.h>
 #include <stdio.h>
 
+#ifndef DEBUG_LOGGER_SIZE
+	#define DEBUG_LOGGER_SIZE (256)
+#endif
+
 #if defined(_WIN32) || defined(_WIN64) || defined(__linux__)
 #include <iostream>
 #include <cstring>
@@ -13,7 +17,7 @@
     #warning Check if the hDebugUart is defined?
     extern UART_HandleTypeDef hDebugUart;
 #elif defined(ESP32) // ESP32
-    #warning 'Serial' is used for debugging!
+    #warning 'Serial' is used for debugging, initialize by yourself!
 #endif // HAL_UART_MODULE_ENABLED
 
 enum logger_output_type_t
@@ -23,20 +27,20 @@ enum logger_output_type_t
     LOG_OUT_TYPE_BYTES = 0x02,
 };
 
-template <uint16_t buffer_length = 256>
-class DebugSerial
+template <uint16_t buffer_length>
+class DebugLogger
 {
 public:
     const char *DebugTopic = "DEBUG";
 
-    DebugSerial()
+    DebugLogger()
     {
         _ResetBuffer();
 
         PrintTopic(DebugTopic).Printf("Logger config: %d bytes buffer size\n\n", buffer_length);
     }
 
-    DebugSerial &PrintTopic(const char *topic)
+    DebugLogger &PrintTopic(const char *topic)
     {
         if (topic == nullptr)
             return *this;
@@ -47,7 +51,7 @@ public:
         return *this;
     }
 
-    DebugSerial &Printf(const char *str, ...)
+    DebugLogger &Printf(const char *str, ...)
     {
         if (str == nullptr)
             return *this;
@@ -62,7 +66,7 @@ public:
         return *this;
     }
 
-    DebugSerial &Print(const void *data, uint16_t data_length, const char *topic, logger_output_type_t data_type)
+    DebugLogger &Print(const void *data, uint16_t data_length, const char *topic, logger_output_type_t data_type)
     {
         if (data == nullptr || data_length == 0)
             return *this;
@@ -89,7 +93,7 @@ public:
         return *this;
     }
 
-    DebugSerial &Print(const char *str)
+    DebugLogger &Print(const char *str)
     {
         if (str == nullptr)
             return *this;
@@ -99,7 +103,7 @@ public:
         return *this;
     }
 
-    DebugSerial &Print(const char *str, const char *topic)
+    DebugLogger &Print(const char *str, const char *topic)
     {
         if (str == nullptr)
             return *this;
@@ -107,17 +111,17 @@ public:
         return Print(str, strlen(str), topic, LOG_OUT_TYPE_BYTES);
     }
 
-    DebugSerial &Print(const void *data, uint16_t data_length, logger_output_type_t data_type = LOG_OUT_TYPE_BYTES)
+    DebugLogger &Print(const void *data, uint16_t data_length, logger_output_type_t data_type = LOG_OUT_TYPE_BYTES)
     {
         return Print(data, data_length, nullptr, data_type);
     }
 
-    DebugSerial &Print(const void *data, uint16_t data_length, const char *topic)
+    DebugLogger &Print(const void *data, uint16_t data_length, const char *topic)
     {
         return Print(data, data_length, topic, LOG_OUT_TYPE_BYTES);
     }
 
-    DebugSerial &PrintNewLine()
+    DebugLogger &PrintNewLine()
     {
         return Print("\n");
     }
@@ -243,12 +247,13 @@ private:
 #endif // HAL_UART_MODULE_ENABLED
 };
 
-DebugSerial<256> Logger;
+DebugLogger<DEBUG_LOGGER_SIZE> Logger;
 
 #if defined(DEBUG) || defined(DETAILED_DEBUG)
     #define DEBUG_LOG_SIMPLE(fmt, ...) do { Logger.Printf(fmt, ##__VA_ARGS__); } while (0)
     #define DEBUG_LOG_TOPIC(topic, fmt, ...) do { Logger.PrintTopic(topic).Printf(fmt, ##__VA_ARGS__); } while (0)
-    #define DEBUG_LOG_ARRAY(topic, data, data_length) do { Logger.Print(data, data_length, topic); } while (0)
+    #define DEBUG_LOG_ARRAY_BIN(topic, data, data_length) do { Logger.Print(data, data_length, topic, LOG_OUT_TYPE_BYTES); } while (0)
+	#define DEBUG_LOG_ARRAY_HEX(topic, data, data_length) do { Logger.Print(data, data_length, topic, LOG_OUT_TYPE_HEX); } while (0)
     #define DEBUG_LOG_STR(topic, null_terminated_string) do { Logger.Print(null_terminated_string, topic); } while (0)
 
     #ifdef DETAILED_DEBUG
@@ -261,6 +266,7 @@ DebugSerial<256> Logger;
     #define DEBUG_LOG_SIMPLE(fmt, ...)
     #define DEBUG_LOG_TOPIC(topic, fmt, ...)
     #define DEBUG_LOG(fmt, ...)
-    #define DEBUG_LOG_ARRAY(topic, data, data_length)
+    #define DEBUG_LOG_ARRAY_BIN(topic, data, data_length)
+	#define DEBUG_LOG_ARRAY_HEX(topic, data, data_length)
     #define DEBUG_LOG_STR(topic, null_terminated_string)
 #endif // DEBUG
