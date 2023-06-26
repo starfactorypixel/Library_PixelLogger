@@ -36,8 +36,7 @@ public:
     DebugLogger()
     {
         _ResetBuffer();
-
-        PrintTopic(DebugTopic).Printf("Logger config: %d bytes buffer size\n\n", buffer_length);
+        // don't use any output here because UART isn't initialized yet for STM32
     }
 
     DebugLogger &PrintTopic(const char *topic)
