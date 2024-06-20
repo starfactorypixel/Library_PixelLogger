@@ -3,6 +3,7 @@
 #include <inttypes.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <string.h>
 
 #ifndef DEBUG_LOGGER_SIZE
     #define DEBUG_LOGGER_SIZE (256)
