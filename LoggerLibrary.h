@@ -255,6 +255,7 @@ DebugLogger<DEBUG_LOGGER_SIZE> Logger;
     #define DEBUG_LOG_ARRAY_BIN(topic, data, data_length) do { Logger.Print(data, data_length, topic, LOG_OUT_TYPE_BYTES); } while (0)
     #define DEBUG_LOG_ARRAY_HEX(topic, data, data_length) do { Logger.Print(data, data_length, topic, LOG_OUT_TYPE_HEX); } while (0)
     #define DEBUG_LOG_STR(topic, null_terminated_string) do { Logger.Print(null_terminated_string, topic); } while (0)
+	#define DEBUG_LOG_NEW_LINE() do { Logger.PrintNewLine(); } while (0)
 
     #ifdef DETAILED_DEBUG
         #define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
@@ -269,4 +270,5 @@ DebugLogger<DEBUG_LOGGER_SIZE> Logger;
     #define DEBUG_LOG_ARRAY_BIN(topic, data, data_length)
     #define DEBUG_LOG_ARRAY_HEX(topic, data, data_length)
     #define DEBUG_LOG_STR(topic, null_terminated_string)
+	#define DEBUG_LOG_NEW_LINE()
 #endif // DEBUG
