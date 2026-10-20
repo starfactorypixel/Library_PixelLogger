@@ -1,11 +1,10 @@
 {
-  "name": "PixelLoggerLibrary",
+  "name": "PixelLogger",
   "description": "",
-  "version": "0.0.3",
-  "repository":
-  {
-      "type": "git",
-      "url": "https://github.com/starfactorypixel/PixelLoggerLibrary.git"
+  "version": "1.0.3",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/starfactorypixel/Library_PixelLogger.git"
   },
   "headers": "LoggerLibrary.h"
 }
